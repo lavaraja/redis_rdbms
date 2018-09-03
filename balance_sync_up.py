@@ -8,12 +8,16 @@ def sync_balance(id):
     cursor=db_conn.cursor()
     print(conn.hmget('user:balance',id))
     print(id)
-    db_conn.close()
-    #code
 
-while True:
-    sync_up_list=conn.zrangebyscore('delayset',10,50)
-    for x in sync_up_list:
-        sync_balance(x)
+    #code
+def check_and_sync_balance():
+    while True:
+        sync_up_list = conn.zrangebyscore('delayset', 10, 50)
+        for x in sync_up_list:
+            sync_balance(x)
+        db_conn.close()
+
+
+
 
 
