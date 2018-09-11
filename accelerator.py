@@ -36,7 +36,7 @@ elif args[0] in ('stop','start','restart'):
 
     print()
     print("Validating tables....\n")
-    cached_table_instance = Adaptor(DB_PLATFORM, 0)
+    cached_table_instance = Adaptor(DB_PLATFORM, 50000)
     print(tables)
     validated=cached_table_instance.validate_tables(tables)
     if not validated:

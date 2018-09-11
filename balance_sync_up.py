@@ -1,7 +1,7 @@
 from local_settings import *
 import redis,psycopg2,datetime
 
-conn=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB)
+conn=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RDB_PASSWORD)
 db_conn=psycopg2.connect(database=DB_NAME,user=DB_USER,password=DB_PASSWORD,host=DB_HOST,port=DB_PORT)
 
 def ingest_in_cache(table):
