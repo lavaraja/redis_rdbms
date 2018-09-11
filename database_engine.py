@@ -1,18 +1,27 @@
 from sqlalchemy import create_engine
 from local_settings import *
+import sys
 
 class Adaptor:
-    def __init__(self):
-        self.platform=None
-        self.batchsize=0
+    platform = None
+    batchsize = 0
+    valid = False
+    db_engine = None
+    tables=[]
+    tabdetails = {}
+
+    def __init__(self,platform,batchsize):
+        self.platform=platform
+        self.batchsize=batchsize
         self.valid=False
         self.db_engine=None
         self.tabdetails={}
-    def validate_tables(self,*args):
+
+    def validate_tables(self,args):
         if self.platform == None:
             raise Exception("Backend RDBMS platform not set")
         for table in args:
-            if self.db_table_check(self,table):
+            if self.db_table_check(table):
                 pass
             else:
                 return False
@@ -21,10 +30,20 @@ class Adaptor:
 
 
     def db_table_check(self,tablename):
+        #print(type(tablename),tablename)
         if self.platform not in ('POSTGRESQL','DB2LUW','DB2ZOS','MSSQL','ORACLE'):
-            raise Exception("unsupported DBMS platform")
-        if len(tablename.split('.')) != 2:
-            raise Exception("Table names should be in schemaname.tablename format",tablename)
+            print("unsupported DBMS platform.Please set platform in localsettings.py")
+            sys.exit(1)
+
+        #print(tablename.split('.'))
+        #print(len(list(tablename.split('.'))) !=2 )
+
+        tab=tablename.split('.')[1]
+        sch=tablename.split('.')[0]
+
+        if not tab and not sch :
+            print("Table names should be in schemaname.tablename format",tablename)
+            sys.exit(1)
 
         if self.platform=='POSTGRESQL':
             self.db_engine = 'postgresql'
@@ -32,6 +51,7 @@ class Adaptor:
             engine=create_engine(connection_url)
             conn=engine.connect()
             try:
+                self.tables.append(tablename)
                 tab_schema=tablename.split('.')[0]
                 tab_name=tablename.split('.')[1]
                 timestamp_pass=False;
