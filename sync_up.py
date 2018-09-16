@@ -4,7 +4,7 @@ from database_engine import Adaptor
 from local_settings import *
 import json
 import redis
-import sys
+import sys,datetime
 redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RDB_PASSWORD)
 
 
@@ -22,13 +22,6 @@ def validate_session_key(key):
         #print("i am here")
         #("session key required")
         return False
-
-def load_to_redis():
-    pass
-
-
-
-
 
 def sync_to_redis(Adaptor,sync_type,key):
     #print(Adaptor.tabdetails)
@@ -70,7 +63,20 @@ def sync_to_redis(Adaptor,sync_type,key):
 
                         y=y+1;
                 else:
-                    print(" now records in tables to cache")
+
+                    print(" no records in tables to cache")
+
+                cached_tab=dict({
+                    'tabname':tab,
+                    'initial_sync_count':tot_rows,
+                    'initial_sync_time':datetime.datetime.now(),
+                    'last_cdc_check': datetime.datetime.now(),
+                    'last_cdc_sync':datetime.datetime.now(),
+                    'last_cdc_rec_count':0
+
+                })
+
+                redis_client.hset('cached_tables',tab,cached_tab)
                 print(" table "+tab+" is successfully cached in redis")
 
         except Exception as e:
