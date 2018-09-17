@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from local_settings import *
 import sys
+import redis
+import json
 
 class Adaptor:
     platform = None
@@ -51,6 +53,7 @@ class Adaptor:
             engine=create_engine(connection_url)
             conn=engine.connect()
             try:
+
                 self.tables.append(tablename)
                 tab_schema=tablename.split('.')[0]
                 tab_name=tablename.split('.')[1]
@@ -62,6 +65,7 @@ class Adaptor:
                     if 'timestamp' in row['data_type']:
                         self.tabdetails[tab_name+'_ts']=row['column_name']
                         timestamp_pass=True
+
                         break;
                 # This returns the names and data types of all columns of the primary key for the tablename table:
                 result1 = conn.execute(
@@ -80,8 +84,13 @@ class Adaptor:
                 for row in result2:
                     self.tabdetails[tab_name + '_pk'] = row['column_name']
 
+
                 if pk_single_col and pk_pass and timestamp_pass :
+                    redis_client = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
+                    redis_client.set(tablename,json.dumps(self.tabdetails))
+                    print(json.dumps(self.tabdetails))
                     return True
+
                 else:
                     return False
 

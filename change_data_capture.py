@@ -4,7 +4,7 @@ from database_engine import Adaptor
 import celery
 import sync_up
 import sys
-import re
+import re,json
 
 def validate_session_key(key):
     redis_conn = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
@@ -25,6 +25,8 @@ def initiate_cdc(Adaptor,capture_type,key):
 
     if capture_type=='new':
         redis_conn = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
-        cdc_details = redis_conn.hvals('cached_tables')
+        data=json.loads(redis_conn.hget("cached_tables"))
+
+
 
 

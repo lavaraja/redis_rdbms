@@ -9,9 +9,13 @@ redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RD
 
 
 def confirm_no_active_instance_is_running():
-    return True
+    if bool(redis_client.get("is_active_session")):
+        return True
+    else:
+        return False
 
 def validate_session_key(key):
+
     redis_conn = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
     rkey=redis_conn.get("session_key")
     print("got ",rkey,"given",key)
@@ -58,6 +62,7 @@ def sync_to_redis(Adaptor,sync_type,key):
                         pipline.hset(setname, rec['user_id'], rec)
                         if y==batch_size or x==(tot_rows-1):
                             pipline.execute()
+                            y=0
                             if x!=tot_rows-1:
                                 pipline = redis_client.pipeline()
 
@@ -66,18 +71,22 @@ def sync_to_redis(Adaptor,sync_type,key):
 
                     print(" no records in tables to cache")
 
-                cached_tab=dict({
-                    'tabname':tab,
-                    'initial_sync_count':tot_rows,
-                    'initial_sync_time':datetime.datetime.now(),
-                    'last_cdc_check': datetime.datetime.now(),
-                    'last_cdc_sync':datetime.datetime.now(),
-                    'last_cdc_rec_count':0
-
-                })
-
-                redis_client.hset('cached_tables',tab,cached_tab)
+                data = {}
+                data['tabname'] = tab
+                data['initial_sync_count'] = tot_rows
+                data['initial_sync_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+                data['last_cdc_check'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+                data['last_cdc_sync'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+                data['last_cdc_rec_count'] = 0
+                json_data = json.dumps(data)
+                print(json.dumps(Adaptor.tabdetails))
+                redis_client.set(tab,json.dumps(Adaptor.tabdetails))
+                redis_client.hset('cached_tables',tab,json_data)
                 print(" table "+tab+" is successfully cached in redis")
+
+            redis_client.set("is_active_session",1)
+            print("Initiating CDC for all synced tables")
+            ##call to CDC function.
 
         except Exception as e:
             print(e)

@@ -61,11 +61,7 @@ if option=='yes':
         with conn.cursor() as cursor:
             userobj=user_gen+str(x)
             trnobj = trn_gen + str(x)
-            cursor.execute("insert into balance values(%d,'%s',current_timestamp)" % (random.randint(1,200000),userobj))
-            conn.commit()
-            trn_type=random.choice(trn_types)
-            trn_date=gen_datetime().strftime("%Y-%m-%d %H:%M:%S.%f")
-            cursor.execute("insert into transactions values('%s','%s',%d,'%s','%s')" % (trnobj,userobj,random.randint(-200,300),trn_type,trn_date))
+            cursor.execute("update public.balance set current_balance=%d,latest_trn_time=current_timestamp where user_id='%s'" % (random.randint(1,200000),userobj))
             conn.commit()
     conn.close()
 
