@@ -51,18 +51,19 @@ elif args[0] in ('stop','start','restart'):
         redis_client.set("session_key", "abc")
         if args[0]=="start":
             sync_up.sync_to_redis(cached_table_instance, "start", redis_client.get("session_key"))
+        elif args[0]=="stop":
+            sync_up.sync_to_redis(cached_table_instance, "stop", redis_client.get("session_key"))
+        elif args[0]=="restart":
+            sync_up.sync_to_redis(cached_table_instance, "restart", redis_client.get("session_key"))
 
 
 else:
     print("invalid option.")
-
     print(help)
 
 
 #cached_table_instance=Adaptor('POSTGRESQL',0)
-
 #tab_list=['public.balance','public.transactions']
-
 #print(cached_table_instance.validate_tables(tab_list))
 #print(cached_table_instance.valid)
 

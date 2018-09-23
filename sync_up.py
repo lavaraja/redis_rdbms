@@ -6,7 +6,7 @@ import json
 import redis
 import sys,datetime
 redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RDB_PASSWORD)
-import os
+import os,signal
 from pathlib import Path
 import subprocess as background_shell
 from celerykarman import change_capture
@@ -102,23 +102,26 @@ def sync_to_redis(Adaptor,sync_type,key):
 
     elif sync_type=='stop':
         stop_celery_worker()
-        
+
     elif sync_type=='restart':
         print("Currently restart is not supported. Please use stop and start")
         pass
     else:
         print("Unsupported operation")
 
-def start_celery_worker(tables,no_of_workers=4,):
+def start_celery_worker(tables,no_of_workers=4):
+
     code = background_shell.call(
         "nohup celery -A celerykarman worker --loglevel=ERROR --pidfile=celery/%n.pid --logfile=celery/%n%I.log >nohup_celery.log &",
         shell=True)
-    if code!=0 :
+    if code !=0:
         print("Cannot start the background celery worker.CDC cannot continue.exiting")
         sys.exit(3)
+    time.sleep(5)
     celery_pid_file = Path("celery/celery.pid")
     print("started celery workers")
     print("verifying..")
+    print("pid file status ", celery_pid_file.is_file())
     if not celery_pid_file.is_file():
         print("Error verifying Celery worker status")
         sys.exit(4)
@@ -140,16 +143,25 @@ def stop_celery_worker():
     celery_pid_file=Path("celery/celery.pid")
     if celery_pid_file.is_file():
         with open('celery/celery.pid') as f:
-            pid = f.readlines()
-        if pid[0]:
-            code = background_shell.call("kill -SIGINT "+str(pid),shell=True)
+            pid = int(f.readlines()[0].strip())
+            command='kill -SIGINT '+str(pid)
+            print(command)
+        if pid:
+            print("killing")
+            code = os.kill(pid,signal.SIGTERM)
             time.sleep(3)
-            code = background_shell.call("kill -SIGINT " + str(pid), shell=True)
-            time.sleep(3)
+            if celery_pid_file.is_file():
+                code = os.kill(pid, signal.SIGTERM)
+
+
     if not celery_pid_file.is_file():
         print("Stopped sync up process")
     else:
         print("error stopping CDC process")
+        print("Proceeding with hard killing")
+        with open('celery/celery.pid') as f:
+            pid = int(f.readlines()[0].strip())
+        os.kill(pid,signal.SIGKILL)
 
 
 
