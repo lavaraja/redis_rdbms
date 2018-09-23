@@ -3,7 +3,7 @@ from local_settings import *
 from database_engine import Adaptor
 import sync_up
 import sys
-import re
+import re,json
 
 script_name=sys.argv[0]
 args=sys.argv[1:]
@@ -44,9 +44,18 @@ elif args[0] in ('stop','start','restart'):
         sys.exit(1)
     else:
         print("Tables are valid")
+        redis_client = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
+
+        redis_client.set('tab_details',json.dumps(cached_table_instance.tabdetails))
+        print("data")
+        redis_client.set("session_key", "abc")
+        if args[0]=="start":
+            sync_up.sync_to_redis(cached_table_instance, "start", redis_client.get("session_key"))
+
 
 else:
     print("invalid option.")
+
     print(help)
 
 

@@ -6,10 +6,12 @@ import json
 import redis
 import sys,datetime
 redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RDB_PASSWORD)
-
+import os
 
 def confirm_no_active_instance_is_running():
+    return True
     if bool(redis_client.get("is_active_session")):
+        print("ok")
         return True
     else:
         return False
@@ -80,12 +82,16 @@ def sync_to_redis(Adaptor,sync_type,key):
                 data['last_cdc_rec_count'] = 0
                 json_data = json.dumps(data)
                 print(json.dumps(Adaptor.tabdetails))
-                redis_client.set(tab,json.dumps(Adaptor.tabdetails))
+                #redis_client.set(tab,json.dumps(Adaptor.tabdetails))
                 redis_client.hset('cached_tables',tab,json_data)
                 print(" table "+tab+" is successfully cached in redis")
 
             redis_client.set("is_active_session",1)
+            redis_client.set('tab_details', json.dumps(Adaptor.tabdetails))
             print("Initiating CDC for all synced tables")
+            no_of_tables=len(tables)
+
+
             ##call to CDC function.
 
         except Exception as e:
@@ -103,3 +109,8 @@ def sync_to_redis(Adaptor,sync_type,key):
     else:
         print("Existing running session found. Please stop the session before stating new session")
 
+def start_celery_worker(no_of_workers):
+
+    pass
+def stop_celery_worker():
+    pass

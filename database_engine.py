@@ -52,14 +52,15 @@ class Adaptor:
             connection_url=self.db_engine+'://'+DB_USER+':'+DB_PASSWORD+'@'+DB_HOST+':'+str(DB_PORT)+'/'+DB_NAME
             engine=create_engine(connection_url)
             conn=engine.connect()
+            timestamp_pass = False;
+            pk_pass = False;
+            pk_single_col = False
             try:
 
                 self.tables.append(tablename)
                 tab_schema=tablename.split('.')[0]
                 tab_name=tablename.split('.')[1]
-                timestamp_pass=False;
-                pk_pass=False;
-                pk_single_col=False
+
                 result=conn.execute("select column_name,data_type from information_schema.columns where table_schema='%s' and table_name='%s'" %(tab_schema,tab_name))
                 for row in result:
                     if 'timestamp' in row['data_type']:
@@ -84,12 +85,9 @@ class Adaptor:
                 for row in result2:
                     self.tabdetails[tab_name + '_pk'] = row['column_name']
 
-
                 if pk_single_col and pk_pass and timestamp_pass :
-                    redis_client = redis.StrictRedis(host=RDB_HOST, port=RDB_PORT, db=RDB_DB, password=RDB_PASSWORD)
-                    redis_client.set(tablename,json.dumps(self.tabdetails))
-                    print(json.dumps(self.tabdetails))
                     return True
+
 
                 else:
                     return False
