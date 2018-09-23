@@ -9,7 +9,8 @@ redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RD
 import os
 from pathlib import Path
 import subprocess as background_shell
-from celerykarman import *
+from celerykarman import change_capture
+import time
 
 def confirm_no_active_instance_is_running():
     return True
@@ -89,7 +90,7 @@ def sync_to_redis(Adaptor,sync_type,key):
             redis_client.set('tab_details', json.dumps(Adaptor.tabdetails))
             print("Initiating CDC for all synced tables")
             no_of_tables=len(tables)
-            start_celery_worker(len(tables),4)
+            start_celery_worker(tables,4)
 
             ##call to CDC function.
 
@@ -100,15 +101,15 @@ def sync_to_redis(Adaptor,sync_type,key):
             conn.close()
 
     elif sync_type=='stop':
-        print("Currently stop is not supported")
-        pass
+        stop_celery_worker()
+        
     elif sync_type=='restart':
-        print("Currently restart is not supported")
+        print("Currently restart is not supported. Please use stop and start")
         pass
     else:
         print("Unsupported operation")
 
-def start_celery_worker(no_of_tables,no_of_workers=4,):
+def start_celery_worker(tables,no_of_workers=4,):
     code = background_shell.call(
         "nohup celery -A celerykarman worker --loglevel=ERROR --pidfile=celery/%n.pid --logfile=celery/%n%I.log >nohup_celery.log &",
         shell=True)
@@ -123,13 +124,11 @@ def start_celery_worker(no_of_tables,no_of_workers=4,):
         sys.exit(4)
     print("Celery worker process found.")
     print("Starting CDC tasks")
+    for x in tables:
+        change_capture.delay(x,'POSTGRESQL','40000')
+    print("Started CDC for all tables.")
+    print("Logs are avalible in celery directory")
 
-
-
-
-
-
-    pass
 def check_existing_process():
     celery_pid_file=Path("celery/celery.pid")
     if celery_pid_file.is_file():
@@ -138,4 +137,20 @@ def check_existing_process():
 
 
 def stop_celery_worker():
-    pass
+    celery_pid_file=Path("celery/celery.pid")
+    if celery_pid_file.is_file():
+        with open('celery/celery.pid') as f:
+            pid = f.readlines()
+        if pid[0]:
+            code = background_shell.call("kill -SIGINT "+str(pid),shell=True)
+            time.sleep(3)
+            code = background_shell.call("kill -SIGINT " + str(pid), shell=True)
+            time.sleep(3)
+    if not celery_pid_file.is_file():
+        print("Stopped sync up process")
+    else:
+        print("error stopping CDC process")
+
+
+
+
