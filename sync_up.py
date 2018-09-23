@@ -7,14 +7,12 @@ import redis
 import sys,datetime
 redis_client=redis.StrictRedis(host=RDB_HOST,port=RDB_PORT,db=RDB_DB,password=RDB_PASSWORD)
 import os
+from pathlib import Path
+import subprocess as background_shell
+from celerykarman import *
 
 def confirm_no_active_instance_is_running():
     return True
-    if bool(redis_client.get("is_active_session")):
-        print("ok")
-        return True
-    else:
-        return False
 
 def validate_session_key(key):
 
@@ -35,7 +33,8 @@ def sync_to_redis(Adaptor,sync_type,key):
         raise("No valid session key found")
         #sys.exit(1)
 
-    if sync_type=='start' and confirm_no_active_instance_is_running():
+    if sync_type=='start' :
+        check_existing_process();
         redis_reset=input("Do you want to clear existing keys in redis.  yes/no ? :" )
         if redis_reset=='yes':
             if confirm_no_active_instance_is_running():
@@ -90,7 +89,7 @@ def sync_to_redis(Adaptor,sync_type,key):
             redis_client.set('tab_details', json.dumps(Adaptor.tabdetails))
             print("Initiating CDC for all synced tables")
             no_of_tables=len(tables)
-
+            start_celery_worker(len(tables),4)
 
             ##call to CDC function.
 
@@ -107,10 +106,36 @@ def sync_to_redis(Adaptor,sync_type,key):
         print("Currently restart is not supported")
         pass
     else:
-        print("Existing running session found. Please stop the session before stating new session")
+        print("Unsupported operation")
 
-def start_celery_worker(no_of_workers):
+def start_celery_worker(no_of_tables,no_of_workers=4,):
+    code = background_shell.call(
+        "nohup celery -A celerykarman worker --loglevel=ERROR --pidfile=celery/%n.pid --logfile=celery/%n%I.log >nohup_celery.log &",
+        shell=True)
+    if code!=0 :
+        print("Cannot start the background celery worker.CDC cannot continue.exiting")
+        sys.exit(3)
+    celery_pid_file = Path("celery/celery.pid")
+    print("started celery workers")
+    print("verifying..")
+    if not celery_pid_file.is_file():
+        print("Error verifying Celery worker status")
+        sys.exit(4)
+    print("Celery worker process found.")
+    print("Starting CDC tasks")
+
+
+
+
+
 
     pass
+def check_existing_process():
+    celery_pid_file=Path("celery/celery.pid")
+    if celery_pid_file.is_file():
+        print("existing sync up process found.please stop the process before starting new sync up")
+        sys.exit(2)
+
+
 def stop_celery_worker():
     pass
