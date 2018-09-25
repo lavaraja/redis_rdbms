@@ -9,6 +9,7 @@ We would like improve performance of time critical applications currently facing
 Limitations:
 Currenlty this tool supports only below tables.
 Your table should have primary key and timestamp column.
+Currently only PostgreSQL is only supported as RDBMS paltform.Support for Other RDBMS version are comming soon.
 
 Usage :
 
@@ -20,9 +21,9 @@ $ pip install -r requirements.txt
 
 Steps:
 
-tables_list.txt - This file will contain the list of tables that needs to be cached in rdbms.Add tables names with [schema_name].[tablename] for in the file.
+tables_list.txt - This file will contain the list of tables that needs to be cached in rdbms.Add tables names with [schema_name].[tablename]  in the file.
 
-local_settings will have all database configuration values for redis and rdbms(PostgreSQL,MySQL,Oracle,mssql,DB2). Currently only PostgreSQL only supported.
+local_settings.py file  will have all database configuration values for redis and rdbms(PostgreSQL,MySQL,Oracle,mssql,DB2). Currently only PostgreSQL only supported.
 
 
 Usage:
