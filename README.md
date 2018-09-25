@@ -7,9 +7,14 @@ will be put in redis.The backend job will take care of updating all the records 
 We would like improve performance of time critical applications currently facing bottleneck issues due to underlying RDBMS limitations.
 
 Limitations:
+
 Currenlty this tool supports only below tables.
+
 Your table should have primary key and timestamp column.
+
 Currently only PostgreSQL is only supported as RDBMS paltform.Support for Other RDBMS version are comming soon.
+
+
 
 Usage :
 
@@ -18,6 +23,8 @@ The code is developed using Python-3.Although it should work with python2 but I 
 Install dependencies using python pip.
 
 $ pip install -r requirements.txt
+
+
 
 Steps:
 
