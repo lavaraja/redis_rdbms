@@ -7,13 +7,8 @@ will be put in redis.The backend job will take care of updating all the records 
 We would like improve performance of time critical applications currently facing bottleneck issues due to underlying RDBMS limitations.
 
 Limitations:
-
-Currenlty this tool supports only below tables.
-
-Your table should have primary key and timestamp column.
-
-Currently only PostgreSQL is only supported as RDBMS paltform.Support for Other RDBMS version are comming soon.
-
+Tool supports only tables with timestamp column. This column is used for capturing updated rows.
+Table should have primary key and timestamp column.
 
 
 Usage :
@@ -24,13 +19,11 @@ Install dependencies using python pip.
 
 $ pip install -r requirements.txt
 
-
-
 Steps:
 
 tables_list.txt - This file will contain the list of tables that needs to be cached in rdbms.Add tables names with [schema_name].[tablename]  in the file.
 
-local_settings.py file  will have all database configuration values for redis and rdbms(PostgreSQL,MySQL,Oracle,mssql,DB2). Currently only PostgreSQL only supported.
+local_settings will have all database configuration values for redis and rdbms(PostgreSQL,MySQL,Oracle,Mssql,DB2). Currently only PostgreSQL is supported.
 
 
 Usage:
@@ -39,7 +32,7 @@ Usage:
 
 any changes done to source table in RDBMS and and update corresponding records in redis. Loading RDBMS table to redis is very fast due to its in memory
 
-storage and pipelining concept in redis.
+storage and pipelining concepts in redis.
 
 ./accelerator.py stop == > to stop already running instance.
 
