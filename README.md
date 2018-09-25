@@ -25,7 +25,16 @@ tables_list.txt - This file will contain the list of tables that needs to be cac
 local_settings will have all database configuration values for redis and rdbms(PostgreSQL,MySQL,Oracle,mssql,DB2). Currently only PostgreSQL only supported.
 
 
+Usage:
+
+./accelerator.py start  == > this will load tables into redis cache . Once the tables are loaded backend jobs will be started.These jobs will capture
+
+any changes done to source table in RDBMS and and update corresponding records in redis. Loading RDBMS table to redis is very fast due to its in memory
+
+storage and pipelining concept in redis.
+
+./accelerator.py stop == > to stop already running instance.
 
 
 
-
+Any suggestions and feedback is welcome. Contact me at lavaraja.padala@gmail.com .
