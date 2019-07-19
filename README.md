@@ -1,4 +1,4 @@
-# Redis as front end cache for fast read performace
+# Redis as front end cache for fast read performance
 # Author : Lavaraja Padala
 # Email : lavaraja.padala@gmail.com
 The aim of this project is to test the redis in memory database as front-end cache solution for RDBMS tables.Those tables with high updates/inserts
