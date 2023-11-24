@@ -37,4 +37,4 @@ storage and pipelining concepts in redis.
 
 
 
-Any suggestions and feedback is welcome. Contact me at lavaraja.padala@gmail.com .
+Any suggestions and feedback is welcome.
