@@ -27,14 +27,10 @@ local_settings will have all database configuration values for redis and rdbms(P
 
 Usage:
 
-./accelerator.py start  == > this will load tables into redis cache . Once the tables are loaded backend jobs will be started.These jobs will capture
+./accelerator.py start  == > this will load tables into redis cache . 
 
-any changes done to source table in RDBMS and and update corresponding records in redis. Loading RDBMS table to redis is very fast due to its in memory
-
-storage and pipelining concepts in redis.
+Once the tables are loaded backend jobs will be started.These jobs will capture any changes done to source table in RDBMS and update corresponding records in redis. Loading RDBMS table to redis is very fast due to its in memory storage and pipelining concepts in redis.
 
 ./accelerator.py stop == > to stop already running instance.
-
-
 
 Any suggestions and feedback is welcome.
